@@ -74,10 +74,48 @@
   --color-black: #141b20;
 }
 
+/* ==========================================================================
+   Zentribe motion + material system
+   Based on Apple's fluid-interface principles:
+   response, springs (not durations), interruptibility, materials, restraint.
+   ========================================================================== */
+
+:root {
+  /* Springs, generated from damped-spring physics (response 0.3s).
+     Critically damped (damping 1.0) is the default: no overshoot.
+     The bounce curve (damping 0.8) is only for momentum-driven moments. */
+  --zt-spring: linear(0, 0.06 4.5%, 0.187 9.1%, 0.331 13.6%, 0.467 18.2%, 0.586 22.7%, 0.684 27.3%, 0.762 31.8%, 0.823 36.4%, 0.869 40.9%, 0.904 45.5%, 0.93 50%, 0.949 54.5%, 0.964 59.1%, 0.974 63.6%, 0.981 68.2%, 0.987 72.7%, 0.991 77.3%, 0.993 81.8%, 0.995 86.4%, 0.997 90.9%, 0.998 95.5%, 1 100%);
+  --zt-spring-soft: linear(0, 0.059 4.5%, 0.184 9.1%, 0.327 13.6%, 0.462 18.2%, 0.581 22.7%, 0.679 27.3%, 0.757 31.8%, 0.818 36.4%, 0.865 40.9%, 0.901 45.5%, 0.928 50%, 0.947 54.5%, 0.962 59.1%, 0.973 63.6%, 0.98 68.2%, 0.986 72.7%, 0.99 77.3%, 0.993 81.8%, 0.995 86.4%, 0.996 90.9%, 0.997 95.5%, 1 100%);
+  --zt-spring-bounce: linear(0, 0.057 4.5%, 0.186 9.1%, 0.342 13.6%, 0.495 18.2%, 0.632 22.7%, 0.746 27.3%, 0.835 31.8%, 0.901 36.4%, 0.947 40.9%, 0.978 45.5%, 0.998 50%, 1.009 54.5%, 1.014 59.1%, 1.015 63.6%, 1.014 68.2%, 1.012 72.7%, 1.01 77.3%, 1.008 81.8%, 1.006 86.4%, 1.004 90.9%, 1.003 95.5%, 1 100%);
+  --zt-spring-time: 420ms;
+  --zt-spring-soft-time: 580ms;
+
+  --zt-shadow-sm: 0 1px 2px rgb(35 45 52 / 0.06), 0 1px 1px rgb(35 45 52 / 0.04);
+  --zt-shadow-md: 0 2px 4px rgb(35 45 52 / 0.05), 0 8px 24px -8px rgb(35 45 52 / 0.14);
+  --zt-shadow-lg: 0 4px 8px rgb(35 45 52 / 0.06), 0 24px 56px -12px rgb(35 45 52 / 0.28);
+}
+
+/* ---------- Base ---------- */
+
+html {
+  scroll-padding-top: 5.5rem; /* anchors never hide under the floating header */
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   background-color: #f6f8f9;
   color: #232d34;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
@@ -85,13 +123,255 @@ body {
   color: #ffffff;
 }
 
+/* Taps respond immediately: no double-tap-zoom delay on interactive things. */
+a,
+button,
+summary,
+[role='button'],
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+/* One consistent, visible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--color-teal-500);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+/* ---------- Typography ----------
+   Tracking and leading change with size: large type tightens,
+   body stays near zero, small caps-style labels open up. */
+
+.zt-display {
+  font-size: clamp(2.5rem, 1.4rem + 5.2vw, 4.75rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.zt-title {
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.zt-heading {
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+}
+
+.zt-lead {
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  text-wrap: pretty;
+}
+
+.zt-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------- Press feedback ----------
+   Feedback begins on press (not on release), arrives in ~90ms,
+   and returns on a spring. Works for anything a person can tap. */
+
+.zt-press {
+  transition:
+    transform var(--zt-spring-time) var(--zt-spring),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 240ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+  will-change: transform;
+}
+
+.zt-press:active {
+  transform: scale(0.965);
+  transition-duration: 90ms, 120ms, 120ms, 120ms, 120ms, 120ms;
+  transition-timing-function: ease-out;
+}
+
+.zt-press-soft:active {
+  transform: scale(0.985);
+}
+
+/* ---------- Interactive cards ----------
+   Lift only where hover genuinely exists (never sticky on touch). */
+
+.zt-card-hover {
+  transition:
+    transform var(--zt-spring-time) var(--zt-spring),
+    box-shadow 300ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zt-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--zt-shadow-md);
+  }
+}
+
+.zt-card-hover:active {
+  transform: scale(0.99);
+  transition-duration: 90ms, 120ms;
+  transition-timing-function: ease-out;
+}
+
+/* ---------- Materials ----------
+   Translucent layers keep content visible underneath and let the
+   chrome float rather than occupy a fixed strip. */
+
+.zt-glass {
+  background-color: rgb(255 255 255 / 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Bigger surfaces read as thicker: heavier blur and a deeper shadow. */
+.zt-glass-thick {
+  background-color: rgb(255 255 255 / 0.82);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  backdrop-filter: blur(32px) saturate(190%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 0 0 1px rgb(35 45 52 / 0.06),
+    var(--zt-shadow-lg);
+}
+
+/* Scroll-edge effect: no permanent divider. The hairline fades in
+   only once content is actually passing underneath the header. */
+.zt-header-edge {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgb(35 45 52 / 0.14) 12%,
+    rgb(35 45 52 / 0.14) 88%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 240ms ease;
+  pointer-events: none;
+}
+
+.zt-header[data-scrolled='true'] .zt-header-edge {
+  opacity: 1;
+}
+
+.zt-header[data-scrolled='true'] {
+  box-shadow: 0 8px 24px -16px rgb(35 45 52 / 0.25);
+}
+
+/* ---------- Menus and sheets ----------
+   They grow out of the control that opened them (transform-origin),
+   and leave along the same path they arrived on. The surface
+   materializes: blur and scale animate together, not just opacity.
+   CSS transitions re-target from the live value, so a menu that is
+   closed mid-open reverses smoothly instead of finishing first. */
+
+.zt-sheet {
+  transform-origin: top right;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.94);
+  -webkit-backdrop-filter: blur(0px) saturate(100%);
+  backdrop-filter: blur(0px) saturate(100%);
+  transition:
+    transform var(--zt-spring-time) var(--zt-spring),
+    opacity 160ms ease,
+    backdrop-filter 300ms ease,
+    -webkit-backdrop-filter 300ms ease,
+    visibility 0s linear var(--zt-spring-time);
+}
+
+.zt-sheet[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  backdrop-filter: blur(32px) saturate(190%);
+  transition:
+    transform var(--zt-spring-time) var(--zt-spring),
+    opacity 200ms ease,
+    backdrop-filter 300ms ease,
+    -webkit-backdrop-filter 300ms ease,
+    visibility 0s;
+}
+
+/* Dim to focus: a scrim behind a modal-ish surface. */
+.zt-scrim {
+  background-color: rgb(20 27 32 / 0.28);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 260ms ease,
+    visibility 0s linear 260ms;
+}
+
+.zt-scrim[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 260ms ease,
+    visibility 0s;
+}
+
+/* ---------- Entrances ----------
+   Calm, staggered, one-time. Content rises into place. */
+
+@keyframes zt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes zt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.zt-rise {
+  animation: zt-rise var(--zt-spring-soft-time) var(--zt-spring-soft) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* Page-level crossfade (opacity only, so fixed-position children
+   such as modals are never affected by a transformed ancestor). */
+.zt-page {
+  animation: zt-fade 240ms ease-out both;
+}
+
+/* ---------- Existing Zentribe utilities (kept, now spring-driven) ---------- */
+
 .zt-disc {
   border-radius: 9999px;
   box-shadow:
     8px 12px 24px rgba(35, 45, 52, 0.14),
     -3px -3px 10px rgba(255, 255, 255, 0.9);
   transition:
-    transform 300ms ease,
+    transform var(--zt-spring-time) var(--zt-spring),
     box-shadow 300ms ease;
 }
 
@@ -116,4 +396,104 @@ body {
 
 .zt-no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ---------- Skip link ---------- */
+
+.zt-skip {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  border-radius: 9999px;
+  background: var(--color-teal-800);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  transition: transform 200ms ease;
+}
+
+.zt-skip:focus {
+  transform: none;
+}
+
+/* ==========================================================================
+   Accessibility adaptations: three independent signals
+   ========================================================================== */
+
+/* Reduced motion means gentler, not absent: no travel or scale,
+   but opacity changes remain so state is still communicated. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .zt-press,
+  .zt-card-hover,
+  .zt-disc {
+    transition-property: background-color, border-color, box-shadow, color, opacity;
+    transition-duration: 150ms;
+  }
+
+  .zt-press:active,
+  .zt-card-hover:active,
+  .zt-card-hover:hover,
+  .zt-disc:hover {
+    transform: none;
+  }
+
+  .zt-rise {
+    animation: zt-fade 200ms ease-out both;
+    animation-delay: 0ms;
+  }
+
+  .zt-sheet,
+  .zt-sheet[data-open='true'] {
+    transform: none;
+    transition:
+      opacity 180ms ease,
+      visibility 0s linear 180ms;
+  }
+
+  .zt-sheet[data-open='true'] {
+    transition:
+      opacity 180ms ease,
+      visibility 0s;
+  }
+}
+
+/* Reduced transparency: frostier, then solid. */
+@media (prefers-reduced-transparency: reduce) {
+  .zt-glass,
+  .zt-glass-thick {
+    background-color: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .zt-sheet,
+  .zt-sheet[data-open='true'] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: #ffffff;
+  }
+}
+
+/* Higher contrast: near-solid surfaces with a defined border. */
+@media (prefers-contrast: more) {
+  .zt-glass,
+  .zt-glass-thick {
+    background-color: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 0 0 1.5px var(--color-stone-700);
+  }
+
+  .zt-header-edge {
+    opacity: 1;
+    background: var(--color-stone-700);
+  }
 }
