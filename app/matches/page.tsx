@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Lora } from 'next/font/google'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowIcon, Avatar, LineIcon, VerifiedBadge } from '@/lib/ui'
@@ -85,7 +86,7 @@ function MatchCard({
   return (
     <article
       className={[
-        'relative flex w-[270px] shrink-0 snap-start flex-col rounded-[1.5rem] bg-white shadow-lg',
+        'zt-hover-lift relative flex w-[270px] shrink-0 snap-start flex-col rounded-[1.5rem] bg-white shadow-lg',
         recommended ? 'ring-2 ring-coral-400' : 'ring-1 ring-stone-200',
       ].join(' ')}
     >
@@ -137,19 +138,19 @@ function MatchCard({
             type="button"
             onClick={onRequest}
             disabled={requesting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-stone-800 px-3 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-stone-900 disabled:opacity-60"
+            className="zt-press flex w-full items-center justify-center gap-2 rounded-full bg-stone-800 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-900 disabled:opacity-60"
           >
             <LineIcon name="calendar" className="h-4 w-4" />
             {requesting ? 'Sending...' : `Request with ${firstName}`}
           </button>
         )}
 
-        <a
+        <Link
           href={`/therapist/${p.id}`}
-          className="flex w-full items-center justify-center rounded-full border-2 border-stone-800 px-3 py-1.5 text-sm font-semibold text-stone-800 transition-all duration-300 hover:bg-stone-100"
+          className="zt-press flex w-full items-center justify-center rounded-full border-2 border-stone-800 px-3 py-1.5 text-sm font-semibold text-stone-800 hover:bg-stone-100"
         >
           View profile
-        </a>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 py-4">
@@ -408,6 +409,9 @@ export default function MatchesPage() {
       return
     }
 
+    // Show the request as sent immediately; undo it below if saving fails.
+    setStatuses((current) => ({ ...current, [professionalId]: 'pending' }))
+
     const { error: requestError } = await supabase
       .from('session_requests')
       .insert({
@@ -422,6 +426,11 @@ export default function MatchesPage() {
           ? 'You already have a request with this professional.'
           : 'We could not send your request. Please try again.'
       )
+      setStatuses((current) => {
+        const next = { ...current }
+        delete next[professionalId]
+        return next
+      })
       setRequestingId(null)
       return
     }
@@ -432,12 +441,17 @@ export default function MatchesPage() {
   }
 
   function scrollTrack(direction: number) {
-    trackRef.current?.scrollBy({ left: direction * 300, behavior: 'smooth' })
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    trackRef.current?.scrollBy({
+      left: direction * 300,
+      behavior: reduce ? 'auto' : 'smooth',
+    })
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-stone-50 px-6 py-12">
+      <main className="flex-1 bg-stone-50 px-6 py-12">
         <div className="mx-auto max-w-6xl">
           <p className="text-xs font-semibold tracking-[0.25em] text-stone-600">
             MATCH RESULTS
@@ -451,7 +465,7 @@ export default function MatchesPage() {
             {[0, 1, 2].map((item) => (
               <div
                 key={item}
-                className="h-[440px] w-[270px] shrink-0 animate-pulse rounded-[1.5rem] bg-stone-200"
+                className="h-[440px] w-[270px] shrink-0 motion-safe:animate-pulse rounded-[1.5rem] bg-stone-200"
               />
             ))}
           </div>
@@ -462,7 +476,7 @@ export default function MatchesPage() {
 
   if (needsAccount) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50 px-6">
+      <main className="flex flex-1 items-center justify-center bg-stone-50 px-6">
         <div className="zt-card-shadow w-full max-w-lg rounded-[2.5rem] bg-white p-10 text-center">
           <span className="zt-disc mx-auto flex h-14 w-14 items-center justify-center bg-white text-teal-700">
             <LineIcon name="shield" className="h-7 w-7" />
@@ -478,19 +492,19 @@ export default function MatchesPage() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a
+            <Link
               href="/signup"
-              className="rounded-full bg-teal-700 px-8 py-3 font-semibold text-white hover:bg-teal-800"
+              className="zt-press rounded-full bg-teal-700 px-8 py-3 text-center font-semibold text-white hover:bg-teal-800"
             >
               Create account
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/login"
-              className="rounded-full border-2 border-teal-700 px-8 py-3 font-semibold text-teal-800 hover:bg-teal-50"
+              className="zt-press rounded-full border-2 border-teal-700 px-8 py-3 text-center font-semibold text-teal-800 hover:bg-teal-50"
             >
               Log in
-            </a>
+            </Link>
           </div>
         </div>
       </main>
@@ -499,7 +513,7 @@ export default function MatchesPage() {
 
   if (!answers || !ranked) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50 px-6">
+      <main className="flex flex-1 items-center justify-center bg-stone-50 px-6">
         <div className="zt-card-shadow w-full max-w-lg rounded-[2.5rem] bg-white p-10 text-center">
           <h1 className={`${serif.className} text-3xl text-stone-900`}>
             Let&apos;s find your match
@@ -510,12 +524,12 @@ export default function MatchesPage() {
             fit you best.
           </p>
 
-          <a
+          <Link
             href="/find-support"
-            className="mt-8 inline-block rounded-full bg-teal-700 px-8 py-3 font-semibold text-white hover:bg-teal-800"
+            className="zt-press mt-8 inline-block rounded-full bg-teal-700 px-8 py-3 font-semibold text-white hover:bg-teal-800"
           >
             Start now
-          </a>
+          </Link>
         </div>
       </main>
     )
@@ -525,26 +539,26 @@ export default function MatchesPage() {
   const availabilityLines = describeAvailability(answers.availability_slots)
 
   return (
-    <main className="min-h-screen bg-stone-50">
+    <main className="flex-1 bg-stone-50">
       <section className="mx-auto max-w-6xl px-6 pb-10 pt-6">
         <div className="flex items-center justify-between">
-          <a
+          <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-stone-800"
+            className="zt-press inline-flex items-center gap-2 text-stone-800"
           >
             <span className="zt-disc flex h-9 w-9 items-center justify-center bg-white text-teal-700">
               <ArrowIcon left className="h-4 w-4" />
             </span>
 
             <span className="text-sm font-medium">Dashboard</span>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/requests"
-            className="rounded-full border-2 border-stone-800 px-4 py-1.5 text-sm font-semibold text-stone-800 hover:bg-stone-100"
+            className="zt-press rounded-full border-2 border-stone-800 px-4 py-1.5 text-sm font-semibold text-stone-800 hover:bg-stone-100"
           >
             My session requests
-          </a>
+          </Link>
         </div>
 
         <p className="mt-8 text-xs font-semibold tracking-[0.25em] text-stone-600">
@@ -558,13 +572,13 @@ export default function MatchesPage() {
         </h1>
 
         {error && (
-          <div className="mt-5 rounded-2xl border border-coral-200 bg-coral-50 px-4 py-2.5 text-sm text-coral-800">
+          <div role="alert" className="zt-rise mt-5 rounded-2xl border border-coral-200 bg-coral-50 px-4 py-2.5 text-sm text-coral-800">
             {error}
           </div>
         )}
 
         {notice && (
-          <div className="mt-5 rounded-2xl border border-lime-200 bg-lime-50 px-4 py-2.5 text-sm text-lime-800">
+          <div role="status" className="zt-rise mt-5 rounded-2xl border border-lime-200 bg-lime-50 px-4 py-2.5 text-sm text-lime-800">
             {notice}
           </div>
         )}
@@ -645,7 +659,7 @@ export default function MatchesPage() {
                       type="button"
                       onClick={() => scrollTrack(-1)}
                       aria-label="Previous matches"
-                      className="zt-disc flex h-10 w-10 items-center justify-center bg-white text-stone-800"
+                      className="zt-disc zt-press flex h-11 w-11 items-center justify-center bg-white text-stone-800"
                     >
                       <ArrowIcon left className="h-4 w-4" />
                     </button>
@@ -654,7 +668,7 @@ export default function MatchesPage() {
                       type="button"
                       onClick={() => scrollTrack(1)}
                       aria-label="More matches"
-                      className="zt-disc flex h-10 w-10 items-center justify-center bg-stone-800 text-white"
+                      className="zt-disc zt-press flex h-11 w-11 items-center justify-center bg-stone-800 text-white"
                     >
                       <ArrowIcon className="h-4 w-4" />
                     </button>
@@ -756,12 +770,12 @@ export default function MatchesPage() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <a
+            <Link
               href="/find-support"
-              className="rounded-full bg-coral-300 px-7 py-3 font-semibold text-stone-900 shadow-lg transition-all duration-300 hover:bg-coral-400"
+              className="zt-press inline-block rounded-full bg-coral-300 px-7 py-3 font-semibold text-stone-900 shadow-lg hover:bg-coral-400"
             >
               Need to update your preferences?
-            </a>
+            </Link>
           </div>
         </div>
       </section>
