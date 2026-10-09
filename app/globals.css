@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-50: #e8f8fa;
+  --color-teal-100: #c9eef2;
+  --color-teal-200: #9adfe6;
+  --color-teal-300: #61ccd7;
+  --color-teal-400: #31bfcc;
+  --color-teal-500: #1ab5c4;
+  --color-teal-600: #0f9aa8;
+  --color-teal-700: #0b7f8b;
+  --color-teal-800: #0a646e;
+  --color-teal-900: #0a4d56;
+  --color-teal-950: #052f35;
+
+  --color-stone-50: #f6f8f9;
+  --color-stone-100: #eceff1;
+  --color-stone-200: #dde3e6;
+  --color-stone-300: #c3ccd1;
+  --color-stone-400: #9aa8af;
+  --color-stone-500: #7a8b92;
+  --color-stone-600: #5f6f76;
+  --color-stone-700: #485860;
+  --color-stone-800: #33414a;
+  --color-stone-900: #232d34;
+  --color-stone-950: #141b20;
+
+  --color-gray-50: #f6f8f9;
+  --color-gray-100: #eceff1;
+  --color-gray-200: #dde3e6;
+  --color-gray-300: #c3ccd1;
+  --color-gray-400: #9aa8af;
+  --color-gray-500: #7a8b92;
+  --color-gray-600: #5f6f76;
+  --color-gray-700: #485860;
+  --color-gray-800: #33414a;
+  --color-gray-900: #232d34;
+  --color-gray-950: #141b20;
+
+  --color-amber-50: #fff6e5;
+  --color-amber-100: #ffe9c2;
+  --color-amber-200: #fed48a;
+  --color-amber-300: #fbbd54;
+  --color-amber-400: #f8ad33;
+  --color-amber-500: #f5a524;
+  --color-amber-600: #d98a14;
+  --color-amber-700: #b06b10;
+  --color-amber-800: #8a5413;
+  --color-amber-900: #6f4513;
+  --color-amber-950: #3d2308;
+
+  --color-coral-50: #fff0ef;
+  --color-coral-100: #ffdad8;
+  --color-coral-200: #ffbfbc;
+  --color-coral-300: #f9a09d;
+  --color-coral-400: #f4817f;
+  --color-coral-500: #ef6461;
+  --color-coral-600: #d94a47;
+  --color-coral-700: #b53836;
+  --color-coral-800: #8f2c2b;
+  --color-coral-900: #6e2221;
+
+  --color-lime-50: #f3f9e8;
+  --color-lime-100: #e2f1c6;
+  --color-lime-200: #cbe69c;
+  --color-lime-300: #b5db77;
+  --color-lime-400: #a4d35f;
+  --color-lime-500: #8bc53f;
+  --color-lime-600: #70a52d;
+  --color-lime-700: #568022;
+  --color-lime-800: #44651d;
+  --color-lime-900: #36501a;
+
+  --color-black: #141b20;
+}
+
+body {
+  background-color: #f6f8f9;
+  color: #232d34;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: #1ab5c4;
+  color: #ffffff;
+}
+
+.zt-disc {
+  border-radius: 9999px;
+  box-shadow:
+    8px 12px 24px rgba(35, 45, 52, 0.14),
+    -3px -3px 10px rgba(255, 255, 255, 0.9);
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.zt-disc:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    10px 16px 28px rgba(35, 45, 52, 0.18),
+    -3px -3px 10px rgba(255, 255, 255, 0.9);
+}
+
+.zt-lift {
+  box-shadow: 8px 14px 26px rgba(11, 127, 139, 0.35);
+}
+
+.zt-card-shadow {
+  box-shadow: 14px 20px 40px rgba(35, 45, 52, 0.22);
+}
+
+.zt-no-scrollbar {
+  scrollbar-width: none;
+}
+
+.zt-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

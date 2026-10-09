@@ -1,0 +1,242 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { AdminShell } from '@/lib/AdminShell'
+import { LineIcon } from '@/lib/ui'
+import type { IconName } from '@/lib/ui'
+
+type Counts = {
+  professionals: number
+  awaitingProfessionals: number
+  clubs: number
+  unlistedClubs: number
+  openReports: number
+}
+
+type CardLink = {
+  label: string
+  href: string
+  primary?: boolean
+}
+
+function StatCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string
+  value: number | null
+  hint?: string
+}) {
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+      <p className="text-xs font-semibold tracking-widest text-stone-500">
+        {label}
+      </p>
+
+      <p className="mt-2 text-4xl font-bold text-stone-900">
+        {value === null ? '-' : value}
+      </p>
+
+      {hint && <p className="mt-1 text-sm text-stone-600">{hint}</p>}
+    </div>
+  )
+}
+
+function CategoryCard({
+  icon,
+  title,
+  description,
+  note,
+  links,
+}: {
+  icon: IconName
+  title: string
+  description: string
+  note?: string
+  links: CardLink[]
+}) {
+  return (
+    <div className="zt-card-shadow flex flex-col rounded-[2rem] bg-white p-7">
+      <span className="zt-disc flex h-16 w-16 items-center justify-center bg-white text-teal-700">
+        <LineIcon name={icon} className="h-8 w-8" />
+      </span>
+
+      <h2 className="mt-5 text-2xl font-bold text-stone-900">{title}</h2>
+
+      <p className="mt-2 leading-7 text-stone-700">{description}</p>
+
+      {note && (
+        <p className="mt-3 inline-flex w-fit rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800">
+          {note}
+        </p>
+      )}
+
+      <div className="mt-auto flex flex-wrap gap-3 pt-6">
+        {links.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            className={
+              link.primary
+                ? 'rounded-full bg-teal-700 px-5 py-2.5 font-semibold text-white hover:bg-teal-800'
+                : 'rounded-full border-2 border-teal-700 px-5 py-2.5 font-semibold text-teal-800 hover:bg-teal-50'
+            }
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Hub() {
+  const [counts, setCounts] = useState<Counts | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    async function load() {
+      const [pros, clubs, reports] = await Promise.all([
+        supabase.from('professionals').select('id, verification_status'),
+        supabase.from('clubs').select('id, status'),
+        supabase.from('club_reports').select('id, status'),
+      ])
+
+      const proRows = pros.data ?? []
+      const clubRows = clubs.data ?? []
+      const reportRows = reports.data ?? []
+
+      setCounts({
+        professionals: proRows.length,
+        awaitingProfessionals: proRows.filter(
+          (row) => row.verification_status !== 'approved'
+        ).length,
+        clubs: clubRows.length,
+        unlistedClubs: clubRows.filter((row) => row.status !== 'approved')
+          .length,
+        openReports: reportRows.filter((row) => row.status === 'open').length,
+      })
+    }
+
+    load()
+  }, [])
+
+  return (
+    <div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="PROFESSIONALS"
+          value={counts ? counts.professionals : null}
+          hint={
+            counts && counts.awaitingProfessionals > 0
+              ? `${counts.awaitingProfessionals} awaiting approval`
+              : 'All approved'
+          }
+        />
+
+        <StatCard
+          label="CLUBS"
+          value={counts ? counts.clubs : null}
+          hint={
+            counts && counts.unlistedClubs > 0
+              ? `${counts.unlistedClubs} hidden or pending`
+              : 'All listed'
+          }
+        />
+
+        <StatCard
+          label="OPEN REPORTS"
+          value={counts ? counts.openReports : null}
+          hint={
+            counts && counts.openReports > 0 ? 'Needs a look' : 'All clear'
+          }
+        />
+
+        <StatCard
+          label="SECTIONS"
+          value={3}
+          hint="Professionals, clubs, reports"
+        />
+      </div>
+
+      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <CategoryCard
+          icon="user"
+          title="Professionals"
+          description="Review therapists and coaches, approve new ones, edit their profiles and manage verification."
+          note={
+            counts && counts.awaitingProfessionals > 0
+              ? `${counts.awaitingProfessionals} awaiting approval`
+              : undefined
+          }
+          links={[
+            {
+              label: 'See professionals',
+              href: '/admin/professionals',
+              primary: true,
+            },
+            { label: 'Add professional', href: '/admin/professionals/new' },
+          ]}
+        />
+
+        <CategoryCard
+          icon="users"
+          title="Clubs"
+          description="Manage the independent clubs in your directory, keep them fresh and see how many people join through Zentribe."
+          note={
+            counts && counts.unlistedClubs > 0
+              ? `${counts.unlistedClubs} hidden or pending`
+              : undefined
+          }
+          links={[
+            { label: 'See clubs', href: '/admin/clubs', primary: true },
+            { label: 'Add club', href: '/admin/clubs/new' },
+          ]}
+        />
+
+        <CategoryCard
+          icon="shield"
+          title="Reports"
+          description="Read concerns members raise about clubs, mark them resolved, or hide a club while you look into it."
+          note={
+            counts && counts.openReports > 0
+              ? `${counts.openReports} open`
+              : undefined
+          }
+          links={[
+            {
+              label: 'Review reports',
+              href: '/admin/reports',
+              primary: true,
+            },
+          ]}
+        />
+      </div>
+
+      <div className="mt-10 flex flex-wrap gap-6 text-sm">
+        <a href="/dashboard" className="font-semibold text-teal-700 underline">
+          Back to my dashboard
+        </a>
+
+        <a href="/" className="font-semibold text-teal-700 underline">
+          View the live site
+        </a>
+      </div>
+    </div>
+  )
+}
+
+export default function AdminHubPage() {
+  return (
+    <AdminShell
+      wide
+      title="Admin"
+      subtitle="Choose what you would like to manage."
+    >
+      <Hub />
+    </AdminShell>
+  )
+}
